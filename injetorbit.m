@@ -18,6 +18,7 @@ m(1,:) = mexOrbitDyn('sat','GetMean');
 
 %% 标称轨道
 kpstd = [Re + 1170.28,0.001,85,120,60,0];
+% kpstd = [Re + 1170.622,0.001,85,120,60,0];
 sstd(1,:) = mexOrbitDyn('std','init',[epoch,kpstd,Mass]);
 mexOrbitDyn('std','SetForce',[8,1+2+8+16]); % 不含大气与光压
 mstd(1,:) = mexOrbitDyn('std','GetMean');
@@ -25,7 +26,7 @@ mstd(1,:) = mexOrbitDyn('std','GetMean');
 step = 60;
 i = 1;
 %% 调相参数计算
-ut = 350; % 目标相位角，在200~360或0~160范围内
+ut = 303; % 目标相位角，在200~360或0~160范围内
 ug = dufix(a - kpstd(1));
 u1 = ut - ug - 5; % 目标相位角减去固定相位变化量
 if u1 < 0
@@ -39,10 +40,11 @@ dt = u1/du * a2t(a); % 停泊轨道停泊时间
 %             1440*2,1440*3;...
 %            1440*4,1440*5];
 fireoff = [0,dt/step];
-hpause = 1120; % 中间停泊轨道的轨道高度
+dh = 16; % 每升高dh高度，停泊一段时间
+hpause = 1100 + dh; % 中间停泊轨道的轨道高度
 for i = 2:(1440*10)
     qbi = c2q(getcoi(s(i-1,2:7)));
-    if any(i>fireoff(:,1) & i<fireoff(:,2))        
+    if any(i>fireoff(:,1) & i<fireoff(:,2))
         s(i,:) = mexOrbitDyn('sat','step',step);
     else
         s(i,:) = mexOrbitDyn('sat','step',[step, qbi', F, 0, 0, dm]);
@@ -52,7 +54,7 @@ for i = 2:(1440*10)
     mstd(i,:) = mexOrbitDyn('std','GetMean');
     if i > fireoff(end,2) && m(i,1) - Re > hpause
 %         hpause = 1180; % 下次停泊轨道高度
-        hpause = hpause + 20; % 下次停泊轨道高度
+        hpause = hpause + dh; % 下次停泊轨道高度
         if hpause > 1175
             up = 0;
         else
@@ -86,9 +88,11 @@ u = ewmu(s(:,3),s(:,6),s(:,7));
 ustd = ewmu(sstd(:,3),sstd(:,6),sstd(:,7));
 ue = limitpi(u-ustd)*deg;
 ue(ue<0) = ue(ue<0)+360;
+dhl = (1100:dh:1175)';
 diary('diary.txt');
-disp(ue(end));
-disp(fireoff);
+fprintf('目标相位角%f, 转移结束相位角%f\n',ut,ue(end));
+fprintf('停泊轨道高度%.0fkm, 停泊时间 %.1f分 -- %.1f分,停泊时长 %.1f分\n',[dhl,fireoff,fireoff(:,2)-fireoff(:,1)]');
+fprintf('转移时间%.2f天\n',i*step/86400);
 diary off
 s(:,2) = s(:,2) - Re;
 m(:,1) = m(:,1) - Re;
