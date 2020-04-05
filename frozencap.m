@@ -8,7 +8,8 @@ epoch = [2020,9,1,4,0,0];
 h0 = 1175;
 a = h0 + Re;
 % 初始轨道根数
-kp = [a,0.001,85,120,60,0];
+kp = [a,0.002,85,120,180,0];
+fnpostfix = '2'; % 保存曲线的后缀名
 
 F = 0.015; % 推力
 Isp = 1300; % 比冲
@@ -94,18 +95,18 @@ ex = m(:,2).*cos(m(:,5));
 ey = m(:,2).*sin(m(:,5));
 %% 曲线
 figure('Name','冻结轨道捕获瞬根数'),plot6coe(t,kdeg(s(:,2:7)));
-saveas(gcf,'冻结轨道捕获瞬根数.png')
+saveas(gcf,['冻结轨道捕获瞬根数',fnpostfix,'.png'])
 figure('Name','冻结轨道捕获平根数'),plot6coe(t,kdeg(m));
-saveas(gcf,'冻结轨道捕获平根数.png')
+saveas(gcf,['冻结轨道捕获平根数',fnpostfix,'.png'])
 figure('Name','偏心率矢量'),plot(ex,ey),grid on,hold on;
 plot(ex(1),ey(1),'ro');plot(ex(end),ey(end),'rd');
 plot(ext,eyt,'ko');
 xlabel('e_x'),ylabel('e_y');
 legend('e_v','初始点','最终点','目标点','location','best');
-saveas(gcf,'偏心率矢量.png');
+saveas(gcf,['偏心率矢量',fnpostfix,'.png']);
 figure('Name','冻结轨道捕获开机弧段');
 n = 1:length(uec);
 plot(n,uec(:,1),'.-',n,uec(:,2),'.-',n,uec(:,3),'.-',n,uec(:,4),'.-'),grid on;
 xlabel('rev'),ylabel('arg');
 legend('u_p_o_n','u_p_o_f_f','u_n_o_n','u_n_o_f_f','location','best');
-saveas(gcf,'冻结轨道捕获开机弧段.png');
+saveas(gcf,['冻结轨道捕获开机弧段',fnpostfix,'.png']);
