@@ -46,6 +46,7 @@ u_p_off = fc+pi+df;
 %%
 step = 60; % 仿真步长
 i = 1;
+j = 1;
 for i = 2:(1440*5)
     qbi = c2q(getcoi(s(i-1,2:7)));
     if mod(i,109) == 0 % 每圈更新点火参数
@@ -65,6 +66,8 @@ for i = 2:(1440*5)
         u_n_off = fc+df;
         u_p_on = fc+pi-df;
         u_p_off = fc+pi+df;
+        uec(j,1:4) = [u_n_on,u_n_off,u_p_on,u_p_off]*deg;
+        j = j+1;
     end
     f = ma2ta(m(i-1,2),m(i-1,6));
     u = ewmu(m(i-1,2),m(i-1,5),m(i-1,6));
@@ -80,7 +83,7 @@ for i = 2:(1440*5)
     ey = m(i,2)*sin(m(i,5));
     dex = ex - ext;
     dey = ey - eyt;
-    if sqrt(dex.^2+dey.^2) < 1e-5
+    if sqrt(dex.^2+dey.^2) < 5e-5
         break;
     end
 end
@@ -98,4 +101,11 @@ figure('Name','偏心率矢量'),plot(ex,ey),grid on,hold on;
 plot(ex(1),ey(1),'ro');plot(ex(end),ey(end),'rd');
 plot(ext,eyt,'ko');
 xlabel('e_x'),ylabel('e_y');
+legend('e_v','初始点','最终点','目标点','location','best');
 saveas(gcf,'偏心率矢量.png');
+figure('Name','冻结轨道捕获开机弧段');
+n = 1:length(uec);
+plot(n,uec(:,1),'.-',n,uec(:,2),'.-',n,uec(:,3),'.-',n,uec(:,4),'.-'),grid on;
+xlabel('rev'),ylabel('arg');
+legend('u_p_o_n','u_p_o_f_f','u_n_o_n','u_n_o_f_f','location','best');
+saveas(gcf,'冻结轨道捕获开机弧段.png');
